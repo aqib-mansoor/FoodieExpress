@@ -1,4 +1,4 @@
-# FoodieExpress - Customer App
+# FoodieExpress Customer App
 
 A modern multi-vendor e-commerce platform built with React + TypeScript where customers can browse and order from food, grocery, electronics, and bakery vendors.
 
