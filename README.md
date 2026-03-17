@@ -2,9 +2,9 @@
 
 A modern multi-vendor e-commerce platform built with React + TypeScript where customers can browse and order from food, grocery, electronics, and bakery vendors.
 
-Features
+## Features
 
-For Customers
+### For Customers
 
 · Browse multiple categories - Food, Grocery, Electronics, Bakery
 · View vendor stores - Shop from different stores in one place
@@ -17,21 +17,17 @@ For Customers
 · User profile management
 · Multiple address saving
 
-UI/UX
+### UI/UX
 
 · Smooth animations with Framer Motion
 · Fully responsive design
 · Loading skeletons
 · Toast notifications
 
-Tech Stack
+### Tech Stack
 
 React 18, TypeScript, Tailwind CSS, Framer Motion, React Router, Formik + Yup, React Hot Toast, React Icons
 
-Responsive
+### Responsive
 
-Mobile-first approach, works on all devices, touch-friendly interactions
-
-License
-
-MIT
+Mobile-first approach, works on all devices, touch-friendly interactions.
