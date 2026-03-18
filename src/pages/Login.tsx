@@ -90,26 +90,6 @@ const Login: React.FC = () => {
           </button>
         </form>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-100 dark:border-gray-800"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs font-bold">Or continue with</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <button className="flex items-center justify-center py-3 px-4 border border-gray-200 dark:border-gray-800 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-900 dark:text-white">
-            <img src="https://www.svgrepo.com/show/355037/google.svg" className="h-5 w-5 mr-2" alt="Google" />
-            Google
-          </button>
-          <button className="flex items-center justify-center py-3 px-4 border border-gray-200 dark:border-gray-800 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-900 dark:text-white">
-            <Github className="h-5 w-5 mr-2" />
-            GitHub
-          </button>
-        </div>
-
         <p className="text-center text-sm text-gray-500 dark:text-gray-400">
           Don't have an account?{' '}
           <Link to="/register" className="font-bold text-orange-500 hover:text-orange-600">
