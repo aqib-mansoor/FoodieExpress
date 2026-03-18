@@ -1,13 +1,41 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { Star, Clock, ShoppingCart, ArrowRight, Utensils, ShoppingBag, Smartphone, Croissant, Heart, Search } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Star, Clock, ShoppingCart, ArrowRight, Utensils, ShoppingBag, Smartphone, Croissant, Heart, Search, Sparkles, X, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { VENDORS } from '../data/mockData';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { searchGrounding } from '../services/geminiService';
 
 const Home: React.FC = () => {
   const { user, toggleFavoriteVendor } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [groundingResult, setGroundingResult] = useState<any>(null);
+  const [showGrounding, setShowGrounding] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (query.length > 2) {
+      searchTimeoutRef.current = setTimeout(async () => {
+        setIsSearching(true);
+        const result = await searchGrounding(query);
+        setGroundingResult(result);
+        setIsSearching(false);
+        setShowGrounding(true);
+      }, 1000);
+    } else {
+      setShowGrounding(false);
+    }
+  };
+
   const categories = [
     { name: 'Food', icon: <Utensils className="h-7 w-7" />, color: 'bg-orange-500', lightColor: 'bg-orange-50', textColor: 'text-orange-600', count: '150+ Stores', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80' },
     { name: 'Grocery', icon: <ShoppingBag className="h-7 w-7" />, color: 'bg-green-500', lightColor: 'bg-green-50', textColor: 'text-green-600', count: '80+ Stores', image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80' },
@@ -44,11 +72,11 @@ const Home: React.FC = () => {
                 </span>
                 <span>Fastest Delivery in Town</span>
               </div>
-              <h1 className="text-5xl sm:text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter text-gray-900">
+              <h1 className="text-4xl sm:text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter text-gray-900">
                 Craving? <br />
                 <span className="text-orange-500">We Got You.</span>
               </h1>
-              <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-lg font-medium">
+              <p className="text-base md:text-xl text-gray-600 leading-relaxed max-w-lg font-medium">
                 The best local vendors delivered to your door. Food, groceries, tech, and more.
               </p>
             </motion.div>
@@ -57,24 +85,112 @@ const Home: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex flex-col sm:flex-row gap-4"
+              className="flex flex-col gap-4 w-full relative"
             >
-              <div className="relative flex-grow max-w-md">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-400" />
+              <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <div className="relative flex-grow max-w-md w-full">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Search className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    placeholder="What are you looking for?"
+                    className="w-full pl-12 pr-4 py-4 md:py-5 bg-white border-2 border-gray-100 rounded-2xl md:rounded-3xl shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-base md:text-lg"
+                  />
+                  {isSearching && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500"></div>
+                    </div>
+                  )}
                 </div>
-                <input
-                  type="text"
-                  placeholder="What are you looking for?"
-                  className="w-full pl-12 pr-4 py-5 bg-white border-2 border-gray-100 rounded-3xl shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-lg"
-                />
+                <Link
+                  to="/category/Food"
+                  className="bg-orange-500 hover:bg-orange-600 text-white px-8 md:px-10 py-4 md:py-5 rounded-2xl md:rounded-3xl font-black text-base md:text-lg transition-all flex items-center justify-center group shadow-xl shadow-orange-500/20"
+                >
+                  Find Food
+                </Link>
               </div>
-              <Link
-                to="/category/Food"
-                className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-5 rounded-3xl font-black text-lg transition-all flex items-center justify-center group shadow-xl shadow-orange-500/20"
-              >
-                Find Food
-              </Link>
+
+              {/* Search Grounding Results */}
+              <AnimatePresence>
+                {showGrounding && groundingResult && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 mt-4 w-full max-w-2xl bg-white rounded-[32px] shadow-2xl border border-gray-100 p-6 z-50 overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2 text-orange-500">
+                        <Sparkles className="h-5 w-5" />
+                        <span className="text-sm font-black uppercase tracking-widest">Smart Search Insights</span>
+                      </div>
+                      <button 
+                        onClick={() => setShowGrounding(false)}
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      >
+                        <X className="h-4 w-4 text-gray-400" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-6">
+                      {groundingResult.intent && (
+                        <p className="text-gray-600 font-medium italic">"{groundingResult.intent}"</p>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {groundingResult.suggestedCategories?.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Suggested Categories</p>
+                            <div className="flex flex-wrap gap-2">
+                              {groundingResult.suggestedCategories.map((cat: string) => (
+                                <Link
+                                  key={cat}
+                                  to={`/category/${cat}`}
+                                  className="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-xl text-xs font-bold hover:bg-orange-100 transition-colors"
+                                >
+                                  {cat}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {groundingResult.refinedKeywords?.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Refined Keywords</p>
+                            <div className="flex flex-wrap gap-2">
+                              {groundingResult.refinedKeywords.map((kw: string) => (
+                                <button
+                                  key={kw}
+                                  onClick={() => setSearchQuery(kw)}
+                                  className="px-3 py-1.5 bg-gray-50 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-100 transition-colors"
+                                >
+                                  {kw}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {groundingResult.externalInsights && (
+                        <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                          <div className="flex items-center space-x-2 text-blue-600 mb-2">
+                            <ExternalLink className="h-4 w-4" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Web Insight</span>
+                          </div>
+                          <p className="text-sm text-blue-800 font-medium leading-relaxed">
+                            {groundingResult.externalInsights}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
 
             <motion.div

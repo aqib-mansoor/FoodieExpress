@@ -9,12 +9,12 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div className="space-y-6">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center text-white font-bold text-xl">
+            <Link to="/" className="flex items-center space-x-3 group">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-orange-500/30 group-hover:rotate-6 transition-all duration-300">
                 F
               </div>
-              <span className="text-xl font-bold">
-                Foodie<span className="text-orange-500">Express</span>
+              <span className="text-2xl font-black text-white tracking-tighter group-hover:text-orange-500 transition-colors duration-300">
+                Foodie<span className="text-orange-500 group-hover:text-white transition-colors duration-300">Express</span>
               </span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed">

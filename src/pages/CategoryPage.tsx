@@ -1,13 +1,41 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { VENDORS } from '../data/mockData';
-import { Star, Clock, ShoppingCart, Filter, ChevronDown, Heart, ArrowRight } from 'lucide-react';
+import { Star, Clock, ShoppingCart, Filter, ChevronDown, Heart, ArrowRight, Search, Sparkles, X, ExternalLink } from 'lucide-react';
 import { formatPrice } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { searchGrounding } from '../services/geminiService';
 
 const CategoryPage: React.FC = () => {
   const { categoryName } = useParams<{ categoryName: string }>();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [groundingResult, setGroundingResult] = useState<any>(null);
+  const [showGrounding, setShowGrounding] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    if (query.length > 2) {
+      searchTimeoutRef.current = setTimeout(async () => {
+        setIsSearching(true);
+        const result = await searchGrounding(query);
+        setGroundingResult(result);
+        setIsSearching(false);
+        setShowGrounding(true);
+      }, 1000);
+    } else {
+      setShowGrounding(false);
+    }
+  };
+
   const vendors = VENDORS.filter(v => v.category === categoryName);
   const { user, toggleFavoriteVendor } = useAuth();
 
@@ -39,6 +67,87 @@ const CategoryPage: React.FC = () => {
             <p className="text-xl opacity-90 font-medium max-w-lg">
               Discover the finest {categoryName?.toLowerCase()} vendors curated just for you. Quality and speed, guaranteed.
             </p>
+
+            {/* Grounded Search Bar */}
+            <div className="relative max-w-xl pt-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  placeholder={`Search in ${categoryName}...`}
+                  className="w-full pl-12 pr-12 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 transition-all font-bold"
+                />
+                {isSearching && (
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  </div>
+                )}
+              </div>
+
+              {/* Grounding Results */}
+              <AnimatePresence>
+                {showGrounding && groundingResult && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-full left-0 mt-4 w-full bg-white rounded-[32px] shadow-2xl border border-gray-100 p-6 z-50 overflow-hidden text-gray-900"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-2 text-orange-500">
+                        <Sparkles className="h-5 w-5" />
+                        <span className="text-sm font-black uppercase tracking-widest">Smart Insights</span>
+                      </div>
+                      <button 
+                        onClick={() => setShowGrounding(false)}
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      >
+                        <X className="h-4 w-4 text-gray-400" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-6">
+                      {groundingResult.intent && (
+                        <p className="text-gray-600 font-medium italic">"{groundingResult.intent}"</p>
+                      )}
+
+                      <div className="grid grid-cols-1 gap-6">
+                        {groundingResult.refinedKeywords?.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Refined Keywords</p>
+                            <div className="flex flex-wrap gap-2">
+                              {groundingResult.refinedKeywords.map((kw: string) => (
+                                <button
+                                  key={kw}
+                                  onClick={() => setSearchQuery(kw)}
+                                  className="px-3 py-1.5 bg-gray-50 text-gray-600 rounded-xl text-xs font-bold hover:bg-gray-100 transition-colors"
+                                >
+                                  {kw}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {groundingResult.externalInsights && (
+                          <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                            <div className="flex items-center space-x-2 text-blue-600 mb-2">
+                              <ExternalLink className="h-4 w-4" />
+                              <span className="text-[10px] font-black uppercase tracking-widest">Web Insight</span>
+                            </div>
+                            <p className="text-sm text-blue-800 font-medium leading-relaxed">
+                              {groundingResult.externalInsights}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </motion.div>
         </div>
 
