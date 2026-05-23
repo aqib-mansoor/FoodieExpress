@@ -1,5 +1,8 @@
 {
   "name": "Foodie Express",
-  "description": "A feature-rich customer-facing multi-vendor e-commerce platform for food, groceries, electronics, and more.",
-  "requestFramePermissions": []
+  "description": "Premium multi-vendor marketplace featuring AI-powered smart search grounding, real-time order tracking, and social feedback systems.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
